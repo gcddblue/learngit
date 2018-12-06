@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	<style type="text/css">
+		*{margin:0;padding:0;}
+		ul li{list-style: none;}
+		.slide{width:1200px;height:285px;margin:200px auto 0 auto;overflow:hidden;position: relative;}
+		.ulList{height:285px;position: relative;}
+		.boxLists{height:285px;float: left;width:1200px;}
+		.boxLists li{float: left;width:285px;height:285px;background: red;margin-left: 20px;font-size: 18px;text-align: center;line-height: 285px;color:#fff;}
+		.boxLists li:first-child{margin-left:0;}
+		.left{position: absolute;width:40px;height:70px;font-size: 16px;color:#fff;background: rgba(0, 0, 0, .6);text-align: center;line-height: 70px;top:107px;cursor: pointer;z-index: 99}
+		.right{position: absolute;width:40px;height:70px;font-size: 16px;color:#fff;background: rgba(0, 0, 0, .6);text-align: center;line-height: 70px;top:107px;right:0;cursor: pointer;z-index: 99}
+	</style>
+</head>
+<body>
+	<div class = "slide">
+		<div class = "left">&lt;</div>
+		<div class = "right">&gt;</div>
+		<div class = "ulList">
+			<ul class = "boxLists">
+				<li>1</li>
+				<li>2</li>
+				<li>3</li>
+				<li>4</li>
+			</ul>
+			<ul class = "boxLists">
+				<li>5</li>
+				<li>6</li>
+				<li>7</li>
+				<li>8</li>
+			</ul>
+			<ul class = "boxLists">
+				<li>9</li>
+				<li>10</li>
+				<li>11</li>
+				<li>12</li>
+			</ul>
+		</div>
+	</div>
+	<div class = "hello"></div>
+	<p>master dev</p>
+	<p>xinzeng</p>
+	<div>hhhXg</div>
+	<p>xiugai</p>
+	<p>tj</p>
+	<script type="text/javascript">
+		var trigger = null;
+		var EventUtil = {
+				addHandle:function(element, type, handler){
+					if(element.addEventListener){
+						element.addEventListener(type, handler, false);
+					}
+					else if(element.attachEvent){
+						element.attachEvent("on"+type, handler);
+					}
+					else{
+						element["on"+type] = handler;
+					}
+				},
+				removeHandle:function(element, type, handler){
+					if(element.addEventListener){
+						element.removeEventListener(type, handler, false);
+					}
+					else if(element.attachEvent){
+						element.detachEvent("on"+type, handler);
+					}
+					else{
+						element["on"+type] = null;
+					}
+				}
+			}
+		EventUtil.addHandle(document, "DOMContentLoaded", function(){
+			var ul = document.querySelector(".boxLists");
+			var ulList = document.querySelector(".ulList");
+			var wid1 = ul.offsetWidth;
+			var len = ulList.children.length;
+			ulList.style.width = wid1*len + "px";
+			var left = document.querySelector(".left");
+			var right = document.querySelector(".right");
+			EventUtil.addHandle(left, "click", function(){
+				var lastchild = ulList.children[len-1];
+				ulList.insertBefore(lastchild, ulList.children[0]);
+				ulList.style.left = -wid1+"px";
+				startMover(0, ulList);
+
+			})
+			EventUtil.addHandle(right, "click", function(){
+				//alert("hhh");
+				var firstchild = ulList.children[0];
+				startMover(-wid1, ulList, function(){
+					ulList.appendChild(firstchild);
+					ulList.style.left = 0;
+				});
+			})
+			trigger = setTimeout(triClick,1000);
+			EventUtil.addHandle(ulList,"mouseover", function(){
+				clearTimeout(trigger);
+			})
+			EventUtil.addHandle(ulList,"mouseout", function(){
+				trigger = setTimeout(triClick,1000);
+			})
+
+		})
+		var timer = null;
+		function triClick(){
+			document.querySelector(".right").click();
+			trigger = setTimeout(triClick,1000);
+		}
+		function startMover(itarget, ele, callbackFunction){//目标值
+		 clearInterval(timer);//执行当前动画同时清除之前的动画
+		 //var ele = document.getElementById('ele');
+		 timer = setInterval(function(){
+		 var speed = 0;
+		 if(ele.offsetLeft  > itarget){
+		  speed = -30;
+		 }
+		 else{
+		  speed = 30;
+		 }
+		 if(ele.offsetLeft == itarget){
+		  clearInterval(timer);
+		  return callbackFunction();
+		 }
+		 else{
+		  ele.style.left = ele.offsetLeft+speed+'px';
+		  }
+		 },10);
+		}
+	</script>
+</body>
+</html>
