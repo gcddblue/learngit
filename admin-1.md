@@ -2,7 +2,7 @@
 
 ## 前言
 
-相信许多人和我一样刚接触 vue 时看文档都很枯燥，看完 vue，还有 vueRouter 、vuex 、vue-cli (学不动了。。。 )  对于看完教程之后又迟迟不能上手实际项目，只能写一些简单的小demo,这肯定和实际生产工作是有出入的，于是乎我就打算自己从零开始使用最新的技术栈搭建一个vue后台管理系统，依此加深对理论知识的学习，并增强自己的项目能力，所以希望本系列教程对你开发vue项目有所帮助。
+相信许多人和我一样刚接触 vue 时看文档都很枯燥，看完 vue，还有 vueRouter 、vuex 、vue-cli、es6 (学不动了。。。 )  对于看完教程之后又迟迟不能上手实际项目，只能写一些简单的小demo,这肯定和实际生产工作是有出入的，于是乎我就打算自己从零开始使用最新的技术栈搭建一个vue后台管理系统，依此加深对理论知识的学习，并增强自己的项目能力，所以希望本系列教程对你开发vue项目有所帮助。
 
 ## 1.项目基本简介
 
@@ -111,21 +111,27 @@ npm install
 npm run serve
 ```
 
-启动完成后将打开浏览器访问 `http://localhost:8080`,登陆成功后，将看到如下页面
+启动完成后将打开浏览器访问 `http://localhost:8080`,接下来你就可以根据自己的实际需求，可以添加或修改路由，编写自己的业务代码。
 
-![](/Users/gaochenhui/Desktop/QQ20190825-223245.png)
+## 2.页面架构
 
-接下来你就可以根据自己的实际需求，可以添加或修改路由，编写自己的业务代码。
+![](/Users/gaochenhui/Desktop/QQ20190827-215557.png)
 
-## 2.axios封装
+除去登录页外，整个页面架构由三个部分组成 `头部` `侧边栏` `右侧内容页` 在项目@/layout/index.js文件中对对这三个组件进行封装，通过点击左侧菜单切换右侧`router-view` 的路由更替，对应的项目文件如下
 
-在vue项目中，和后台进行请求交互这块，我们通常都会选择axios库，它是基于promise的http库，可运行在浏览器端和node.js中。在本项目中主要实现了请求和相应拦截，get，post请求封装。
+![](/Users/gaochenhui/Desktop/QQ20190827-215909@2x.png)
+
+
+
+## 3.axios封装
+
+在vue项目中，和后台进行请求交互这块，我们通常都会选择axios库，它是基于promise的http库，可运行在浏览器端和node.js中。在本项目中主要实现了请求和响应拦截，get，post请求封装。
 
 #### 配置不同环境
 
 ![](/Users/gaochenhui/Desktop/QQ20190826-220155@2x.png)
 
-通过在项目中创建不同环境的文件，我这里只创建了开发和生产环境的，当然，你也可以创建基于测试的`.env.test` 等文件
+通过在项目中创建不同环境的文件，我这里只创建了开发和生产环境的，当然，你也可以创建基于测试的`.env.test` 等文件，以`.env.production` 为例：
 
 ```
 ENV = 'production'
@@ -133,7 +139,7 @@ ENV = 'production'
 VUE_APP_BASE_API = 'https://www.easy-mock.com/mock/5cee951f11690b5261b75566/admin'
 ```
 
-只有以 `VUE_APP_` 开头的变量会被 `webpack.DefinePlugin` 静态嵌入到客户端侧的包中。你可以在应用的代码中这样访问它们，例如我在@/api/index.js中初始化axios：
+只要以 `VUE_APP_` 开头的变量都会被 `webpack.DefinePlugin` 静态嵌入到客户端的包中。你可以在应用的代码中这样访问它们，例如我在@/api/index.js中初始化axios：
 
 ```
 const $axios = axios.create({
@@ -143,7 +149,7 @@ const $axios = axios.create({
 })
 ```
 
-这里我在项目中创建api文件夹，将所有接口都集中在这个文件夹中，根据不同的业务创建不同js文件，来更好划分接口的功能，其中index.js中代码如下：
+通过创建api文件夹将所有接口都集中在这个文件夹中，根据不同的业务创建不同js文件，来更好的划分接口的功能，其中index.js中代码如下：
 
 ```
 import axios from 'axios'
@@ -258,14 +264,343 @@ export default {
 
 如上，大家可以看我的注释说明，axios配置的封装是整个项目中很重要的模块，其实在不同的项目中，axios封装都大同小异，所以，只要掌握了一种技巧，下次开发新项目也就很容易完成封装这块。
 
-## 3.路由和侧边栏
+## 4.权限验证及侧边栏
 
 #### 路由
 
 路由是组织一个vue项目的关键，在对项目原型分析后，接下来的第一步就是编写路由，本项目中，主要分为两种路由，`currencyRoutes` 和 `asyncRoutes`
 
-`currencyRoutes`：代表通用路由，意思就是不要权限判断，不同角色用户都显示的页面，如：登陆页、404等
+`currencyRoutes`：代表通用路由，意思就是不需要权限判断，不同角色用户都显示的页面，如：登陆页、404等
 
 `asyncRoutes`： 代表动态路由，需要通过判断权限动态分配的页面，有关的权限判断的方法接下来会介绍。
 
-#### 侧边栏
+路由相关配置说明：
+
+```
+/**
+ * 路由相关属性说明
+ * hidden: 当设置hidden为true时，意思不在sideBars侧边栏中显示
+ * mete{
+ * title: xxx,  设置sideBars侧边栏名称
+ * icon: xxx,  设置ideBars侧边栏图标
+ * noCache: true  当设置为true时不缓存该路由页面
+ * }
+ */
+```
+
+
+
+#### 权限验证动态添加侧边栏
+
+本项目通过路由联动更新侧边栏，所有侧边栏配置都是在前端完成的，通过访问接口，后端会返回一个权限相关的list数组，其中数组值为路由的name属性值，前端通过递归遍历`asyncRoutes`判断权限list中是否包含有对应的name路由，最终会返回包含该用户角色所有权限路由页面的addRoutes的数组对象。
+
+具体实现是在路由index.js中设置一个全局前置导航守卫，具体判断流程如下：
+
+![](/Users/gaochenhui/Desktop/QQ20190827-223533.png)
+
+```
+// 导航守卫
+router.beforeEach(async (to, from, next) => {
+  document.title = getTitle(to.meta.title)
+  if (to.path === '/login') {
+    next()
+  } else {
+    if (store.getters.token) {
+      const hasRoles = store.getters.roles.length > 0
+      if (hasRoles) {
+        next()
+      } else {
+        try {
+          const { roles } = await store.dispatch('user/_getInfo')
+          const addRoutes = await store.dispatch(
+            'permission/getAsyncRoutes',
+            roles
+          )
+          router.addRoutes(addRoutes)
+          // hack method to ensure that addRoutes is complete
+          // set the replace: true, so the navigation will not leave a history record
+          next({ ...to, replace: true })
+        } catch (error) {
+          Message.error(error)
+        }
+      }
+    } else {
+      next({
+        path: '/login',
+        query: {
+          redirect: to.fullPath
+        }
+      })
+    }
+  }
+})
+```
+
+这里我在通过addRoutes添加路由时，遇到一个bug，当切换角色时，并不能删除之前添加动态路由，所以这边重新初始化`router.matcher`的属性方式实现：
+
+```
+const creatRouter = () => {
+  return new Router({
+    routes: currencyRoutes,
+    scrollBehavior() {
+      return { x: 0, y: 0 }
+    }
+  })
+}
+const router = creatRouter()
+
+// 解决addRoute不能删除动态路由问题
+export function resetRouter() {
+  const reset = creatRouter()
+  router.matcher = reset.matcher
+}
+```
+
+当我每次退出登录的时候执行`resetRouter`方法来初始化router对象，实现删除之前动态添加的路由。
+
+最后通过element-ui的el-menu组件来递归遍历路由对象加载侧边栏。
+
+## 5.Mock数据
+
+身为前端开发人员，相信大家都知道Mock数据吧，它的作用主要就是伪造假数据使团队可以并行开发，本项目使用了 [easy-mock](https://www.easy-mock.com/) 来实现接口数据的请求，大家可以去官网看下简单教程，`easy-mock` 它的好处就是不用像传统mock数据那样需要在项目中创建mock文件夹并拦截ajax来实现假数据请求，它是真真实实的api请求，并允许任何跨域请求，下面是本项目所有接口
+
+![](/Users/gaochenhui/Desktop/QQ20190828-221703.png)
+
+其中所有接口通过创建 `_res` 字段来判断请求是否含有Authorzation头部字段是否含有token来判断用户是否是登陆状态，如下 getCardsData接口的配置：
+
+```
+{
+  code: 0,
+  data: {
+    vistors: '@integer(10000, 100000)',
+    message: '@integer(100, 1000)',
+    order: '@integer(0, 1000)',
+    profit: '@integer(1000, 100000)'
+  },
+  _res: function({
+    _req,
+    Mock
+  }) {
+    if (!_req.header.authorization) {
+      return {
+        status: 401,
+        data: {
+          msg: '未授权'
+        }
+      }
+    } else {
+      return {
+        status: 200
+      }
+    }
+  }
+}
+```
+
+mock数据在项目开发中能够起到推进项目进度的功效，大家可以预先和后端人员商量好，并先拿到假数据字段，然后mock自己的假数据，这样你就可以不用等后端人员开发接口而使项目卡住。一般在项目中，创建`.env.development` 和`.env.production` 文件，代表了开发和生产环境，在文件里可以定义不同环境接口的请求url
+
+```
+# base api
+VUE_APP_BASE_API = 'https://www.easy-mock.com/mock/5cee951f11690b5261b75566/admin'
+```
+
+在封装axios这样初始化
+
+```
+const $axios = axios.create({
+  // 设置超时时间
+  timeout: 30000,
+  // 基础url，会在请求url中自动添加前置链接
+  baseURL: process.env.VUE_APP_BASE_API
+})
+```
+
+这样就可以自动根据不同的环境切换请求地址，不用我们一个一个的修改每一个请求接口
+
+## 6.登录
+
+![](/Users/gaochenhui/Desktop/lp01 (1).gif)
+
+通过将登录函数封装在store中，当点击登陆时，调用`this.$store.dispatch('user/_login', this.ruleForm)` 这个action方法，当后台接口验证成功时，会返回 `token` 字段，前端会调用 `localStroage` 接口将这个 `token` 保存在本地，以后每次请求前通过拦截器将这个token保存在 `Authorization` 这个头部字段中，后台只要验证这个token就知道这个用户的信息了。还不只token的同学，可以 [疯狂点击token说明](http://www.ruanyifeng.com/blog/2018/07/json_web_token-tutorial.html) 里面对http为什么要添加toekn及token介绍的都很详细。
+
+这里我还采用了仿 [geetest](https://www.geetest.com/) 行为验证，通过滑动图片来验证真人操作，其中原理利用 h5 canves绘制功能，绘制底部图片和滑块图片，然后监听mouseMove事件，当滑动block抠出的图片和初始化图片的y坐标差小于10时触发验证成功函数。
+
+## 7、优化及小技巧
+
+#### 巧用Mixins
+
+如果你的多个组件都用到一个或多个方法，我们可以不用每次都粘贴复制，这样岂不是很low，我们可以将这些方法封装在一个js文件中,当我的某个组件需要调用这个方法时
+
+```
+import aMixin from '@/mixins/a-mixin'
+export default {
+  name: 'page1',
+  mixins: [newsMixin]  //调用mixins属性，将aMixin这个模块的数据及方法等都添加进这个组建吧
+}
+```
+
+[mixins的使用使用规则](https://cn.vuejs.org/v2/guide/mixins.html) 
+
+#### Object.freeze方法
+
+这个方法有什么用呢，它主要是可以将一个对象冻结，防止对象被修改，那这个对vue项目有什么优化作用呢，大家都知道vue采用了**数据劫持**的方式遍历数据对象，把这些属性转为getter、settter方法来监听并通知数据的变化，所以当你遇到一个巨大的数组或者对象，并且确定数据不会修改，这时就可以使用 `Object.freeze()` 方法来组织vue对这个巨大数据的转化，，这可以让性能得到很大的提升，举个例子：
+
+```
+new Vue({
+    data: {
+        // vue不会对list里的object做getter、setter绑定
+        list: Object.freeze([
+            { value: 1 },
+            { value: 2 }
+        ])
+    },
+    mounted () {
+        // 界面不会有响应
+        this.list[0].value = 100;
+
+        // 下面两种做法，界面都会响应
+        this.list = [
+            { value: 100 },
+            { value: 200 }
+        ];
+        this.list = Object.freeze([
+            { value: 100 },
+            { value: 200 }
+        ]);
+    }
+})
+```
+
+#### 自动化导入模块
+
+当我们某个组件或js文件需要引入多个模块时，一般做法就是，import每个模块，这样显然是相当繁琐的，这时 `require.context` 函数将派上用场，那个这个函数到底怎么用呢，这里官法介绍是 **主要用来实现自动化导入模块,在前端工程中,如果遇到从一个文件夹引入很多模块的情况,可以使用这个api,它会遍历文件夹中的指定文件,然后自动导入,使得不需要每次显式的调用import导入模块** 
+
+`require.context` 函数接受三个参数：
+
+1. directory {String} -读取文件的路径
+2. useSubdirectories {Boolean} -是否遍历文件的子目录
+3. gExp {RegExp} -匹配文件的正则
+
+如
+
+```
+require.context('./test', false, /.test.js$/)
+#上面的代码遍历当前目录下的test文件夹的所有.test.js结尾的文件,不遍历子目录
+```
+
+`require.context` 函数执行后返回一个函数，并且这个函数包含了三个属性：
+
+1. resolve {Function} -接受一个参数request,request为test文件夹下面匹配文件的相对路径,返回这个匹配文件相对于整个工程的相对路径
+2. keys {Function} -返回匹配成功模块的名字组成的数组
+3. id {String} -执行环境的id,返回的是一个字符串
+
+我们常会遍历keys返回的数组来对路径进行处理，这是相当方便的，最后 `require.context` 返回的函数接受keys放回数组中的路径成员作为参数，并返回这个路径文件的模块
+
+下面是我使用 `require.context` 函数动态生成moudles对象
+
+![](/Users/gaochenhui/Desktop/QQ20190831-001243@2x.png)
+
+```
+import Vue from 'vue'
+import Vuex from 'vuex'
+import getters from './getters'
+const path = require('path')
+
+Vue.use(Vuex)
+
+const files = require.context('./modules', false, /\.js$/)
+let modules = {}
+files.keys().forEach(key => {
+  let name = path.basename(key, '.js')
+  modules[name] = files(key).default || files(key)
+})
+const store = new Vuex.Store({
+  modules,
+  getters
+})
+export default store
+```
+
+#### cdn引入
+
+对于一些不常改动的模块库，例如： `vue` `vueRouter` `vuex` `echarts` `element-ui` 等， 我们让 `webpack` 不将他们进行打包，而是通过 `cdn` 引入，这样就可以减少代码大小，减少服务器带宽，并通过cdn将它们缓存起来，提高网站性能 。
+
+具体实现就是修改 `vue.config.js` ,为对象模块添加 `externals`  完整配置如下：
+
+```
+const cdn = {
+	css: [
+		// element-ui css
+   'https://unpkg.com/element-ui/lib/theme-chalk/index.css'
+	],
+	js: [
+		// vue
+    'https://unpkg.com/vue/2.5.22/vue.min.js',
+    // element-ui
+    'https://unpkg.com/element-ui/lib/index.js',
+    // vue
+    'https://unpkg.com/vuex/3.1.0/vuex.min.js'
+	]
+}
+# 不打包vue、element-ui、vuex
+module.exports = {
+	externals: {
+		vue: 'Vue',
+  	'element-ui':'ELEMENT',
+  	vuex: 'Vuex'
+  },
+  chainWebpack: config => {
+  	config.plugin('html')
+        .tap(args => {
+          args[0].cdn = cdn
+          return args
+        })
+  }
+}
+```
+
+接下来修改 `index.html`
+
+```
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <% if (process.env.NODE_ENV === 'production') { %>
+    	<!-- 引入样式 -->
+      <% for(var css of htmlWebpackPlugin.options.cdn.css) { %>
+        <link rel="stylesheet" href="<%=css%>">
+      <% } %>
+      <!-- 引入js -->
+      <% for(var js of htmlWebpackPlugin.options.cdn.js) { %>
+        <script src="<%=js%>"></script>
+      <% } %>      
+    <% } %>
+    <title>vue-admin-webapp</title>
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but vue-admin-webapp doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+</html>
+```
+
+好了，大公告成
+
+#### vue cli3多页面配置
+
+可以关注我的另一篇文章 [正确姿势使用vue cli3配置多页项目](https://juejin.im/post/5d677c74f265da03b1205fbc) 
+
+#### vue cli3初始化项目
+
+可以关注我的另一篇文章 [正确姿势使用vue cli3创建项目](https://juejin.im/post/5d615cdcf265da03a715de23) 
+
+## 总结
+
+这个项目是我在上班之余断断续续开发的，没太写过技术贴，文笔和逻辑组织能力还是相当差的，大家见谅。起初在没开始做之前觉得应该相当的顺利的，没想到真正一步一步实现时，还是和自己最初设想是有出入的，期间遇到了不少的bug，大多都是因为细节不注意，也让我更加体会 **好记性不如烂笔头** 这句话，实践才是真理啊，多动手，多探索。最后我会考虑 [nui-app](https://uniapp.dcloud.io/) 这个框架开发多平台（小程序、android、ios、h5）移动端应用，期待吧...
