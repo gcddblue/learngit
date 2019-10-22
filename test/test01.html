@@ -1,61 +1,60 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<meta charset="utf-8">
-	<title>dev</title>
-</head>
-<body>
-	<div>
-		<p class = "pTxt" id = "pTxt">这是一段文字</p>
-		<a href="javascript:;" class = "btn" id = "btn">按钮</a>
-	</div>
-	<script type="text/javascript">
-		var p = document.getElementById("pTxt");
-		var btn = document.getElementById("btn");
-		// var span = document.createElement("span");
-		// span.style = "color:red;";
-		p.appendChild(document.createTextNode("<span style = 'color:red;'>添加</span>"));
-		// p.appendChild(span);
+  <head>
+    <meta charset="utf-8" />
+    <title>dev</title>
+  </head>
+  <body>
+    <div>
+      <p class="pTxt" id="pTxt">这是一段文字</p>
+      <a href="javascript:;" class="btn" id="btn">按钮</a>
+    </div>
+    <script type="text/javascript">
+      var p = document.getElementById('pTxt');
+      var btn = document.getElementById('btn');
+      // var span = document.createElement("span");
+      // span.style = "color:red;";
+      p.appendChild(
+        document.createTextNode("<span style = 'color:red;'>添加</span>")
+      );
+      // p.appendChild(span);
+      console.log(Object.prototype.toString.call('str1'));
 
-
-		//封装绑定事件
-		var EventUtil = {
-			addHandler:function(element, type, handle){
-				if(element.addEventListener){
-					element.addEventListener(type, handle, false);
-				}
-				else if(element.attachEvent){
-					element.attachEvent("on"+type, handle);
-				}
-				else{
-					element["on"+type] = handle;
-				}
-			},
-			removeHandle:function(element, type, handle){
-				if(element.removeEventListener){
-					element.removeEventListener(type, handle, false);
-				}
-				else if(element.detachEvent){
-					element.detachEvent("on"+type, handle);
-				}
-				else{
-					element["on"+type] = null;
-				}
-
-			}
-		}
-		var handle = function(){alert("hhh");}
-		EventUtil.addHandler(btn, "click", handle);
-	</script>
-	<!-- <script type="text/javascript">
+      //封装绑定事件
+      var EventUtil = {
+        addHandler: function(element, type, handle) {
+          if (element.addEventListener) {
+            element.addEventListener(type, handle, false);
+          } else if (element.attachEvent) {
+            element.attachEvent('on' + type, handle);
+          } else {
+            element['on' + type] = handle;
+          }
+        },
+        removeHandle: function(element, type, handle) {
+          if (element.removeEventListener) {
+            element.removeEventListener(type, handle, false);
+          } else if (element.detachEvent) {
+            element.detachEvent('on' + type, handle);
+          } else {
+            element['on' + type] = null;
+          }
+        }
+      };
+      var handle = function() {
+        alert('hhh');
+      };
+      EventUtil.addHandler(btn, 'click', handle);
+    </script>
+    <!-- <script type="text/javascript">
 		$("#pTxt").append("<span style = 'color:red;'>添加</span>");
 		$("#btn").click(function(){
 			alert("hhh");
 		})
 	</script> -->
-   <div class = "testMain"></div>
-   <p>fenzhixiugai</p>
-   <p>pushtest</p>
-   <div class = "test2"></div>
-</body>
+    <div class="testMain"></div>
+    <p>fenzhixiugai</p>
+    <p>pushtest</p>
+    <div class="test2"></div>
+  </body>
 </html>
